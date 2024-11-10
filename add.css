@@ -1,0 +1,56 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: cadetblue;
+    height: 100vh;
+    margin: 0px;
+}
+
+.box {
+    background-color: beige;
+    padding: 10px;
+    border-radius: 10px;
+    position: relative;
+
+    form {
+        display: flex;
+        flex-direction: column;
+        
+        * {
+            margin: 10px;
+        }
+        input,textarea {
+            padding: 0.5rem;
+            border-radius: 1.5rem;
+        }
+        input.name {
+            width: 10rem;
+        }
+        textarea.detail {
+            height: 15rem;
+            width: 20rem;
+        }
+        .btnCenter {
+            text-align: center;
+        }
+        button {
+            padding: 0.5rem 0rem;
+            margin: 0px;
+            width: 7rem;
+            border-radius: 1.5rem;
+        }
+    }
+    .exit {
+        width: 1.5rem;
+        height: 1.5rem;
+        background-color: red;
+        border-radius: 1.5rem;
+        position: absolute;
+        right: 1.5rem;
+        top: 1.5rem;
+    }
+    .exit:hover {
+        background-color: rgb(231, 109, 109);
+    }
+}
