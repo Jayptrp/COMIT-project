@@ -5,6 +5,12 @@ if (!isset($_SESSION["name"])) {
     header("Location: login.php");
     exit();
 }
+if (isset($_GET["logout"])) {
+    session_destroy();
+    header("Location: login'php");
+    exit();
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -29,7 +35,26 @@ if (!isset($_SESSION["name"])) {
             </a>
         </div>
         <div class="content">
-            <p>Test 1</p>
+            <?php
+            // SQL query to select all rows from the complaint table
+            $sql = "SELECT com_name, com_time, emp_id, com_status FROM complaint";
+            $query = mysqli_query($conn, $sql);
+
+            // Check if there are any results
+            if (mysqli_num_rows($query) > 0) {
+                // Loop through each result and create a div with a 4-grid layout
+                while ($result = mysqli_fetch_assoc($query)) {
+                    echo '<div class="complaint-grid">';
+                    echo '<div class="grid-item">' . htmlspecialchars($result["com_name"]) . '</div>';
+                    echo '<div class="grid-item">' . htmlspecialchars($result["com_time"]) . '</div>';
+                    echo '<div class="grid-item">' . htmlspecialchars($result["emp_id"]) . '</div>';
+                    echo '<div class="grid-item">' . htmlspecialchars($result["com_status"]) . '</div>';
+                    echo '</div>';
+                }
+            } else {
+                echo "No complaints found.";
+            }
+            ?>
         </div>
     </div>
     <div class="footer">

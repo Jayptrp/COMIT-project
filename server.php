@@ -1,6 +1,6 @@
 <?php
 
-$conn = mysqli_connect("root","d67g7","g7","d67g7");
+$conn = mysqli_connect("root","","d67g7");
 
 // Check connection
 if (mysqli_connect_errno()) {
