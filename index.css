@@ -32,7 +32,7 @@
 
 .main {
     height: 80vh;
-    background-color: rgb(255, 138, 243);
+    background-color: rgb(238, 209, 255);
 
     .btn-area {
         display: grid;
@@ -40,7 +40,7 @@
         padding: 1rem 0;
 
         button {
-            border: 1px solid rgb(85, 21, 85);
+            border: 1px solid rgb(212, 212, 212);
             padding: 3px 5px;
             outline: none;
             background-color: transparent;
@@ -58,7 +58,7 @@
     .content {
         height: 60vh;
         margin: 0 10rem;
-        background-color: rgb(91, 172, 243);
+        background-color: rgb(255, 255, 255);
         border-radius: 0.5rem;
     }
 }

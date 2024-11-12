@@ -13,6 +13,11 @@
             <input name="Cname" class="name" type="text" placeholder="Complaint name" required>
             <textarea name="Cdetail" class="detail" type="text" placeholder="detail.. (optional)"></textarea>
             <div class="btnCenter">
+		<select>
+		    <option>Emergency</option>
+		    <option>Urgent</option>
+		    <option>Chill chill</option>
+		</select>
                 <button type="submit">submit</button>
             </div>
         </form>
