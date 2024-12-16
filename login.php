@@ -8,7 +8,7 @@ if (isset($_POST["username"]) && isset($_POST["password"])) {
     
     // Assuming $conn is your database connection
     // Use prepared statement to prevent SQL injection
-    $sql = "SELECT emp_name, emp_password, emp_role FROM employee WHERE emp_name = ?";
+    $sql = "SELECT emp_name, emp_password, role_id , emp_id, dep_code, emp_pfp FROM employee WHERE emp_name = ?";
     $stmt = mysqli_prepare($conn, $sql);
     
     // Bind the parameter to the prepared statement
@@ -29,8 +29,10 @@ if (isset($_POST["username"]) && isset($_POST["password"])) {
         if ($password == $row["emp_password"]) {
             // Password is correct, store session data
             $_SESSION["name"] = $row["emp_name"];
-            $_SESSION["role"] = $row["emp_role"];
-            
+            $_SESSION["role"] = $row["role_id"];
+            $_SESSION["emp_id"] = $row["emp_id"];
+            $_SESSION["dep_code"] = $row["dep_code"];
+            $_SESSION["emp_pfp"] = $row["emp_pfp"];
             // Redirect to index.php
             header("Location: index.php");
             exit(); // Ensure no further code is executed after the redirect
@@ -68,3 +70,7 @@ if (isset($_POST["username"]) && isset($_POST["password"])) {
     </div>
 </body>
 </html>
+
+
+
+

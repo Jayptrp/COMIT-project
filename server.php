@@ -1,11 +1,11 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-$conn = mysqli_connect("root","","d67g7");
+$conn = mysqli_connect("localhost", "root", "", "d67g7");
 
-// Check connection
-if (mysqli_connect_errno()) {
-  echo "Failed to connect to MySQL: " . mysqli_connect_error();
-  exit();
+// ตรวจสอบการเชื่อมต่อฐานข้อมูล
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
 }
-
 ?>
