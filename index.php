@@ -16,6 +16,13 @@ if (isset($_GET["logout"])) {
 $userId = $_SESSION['emp_id'];
 $result = $conn->query("SELECT emp_pfp FROM employee WHERE emp_id = $userId");
 $userProfilePicUrl = $result->fetch_assoc()['emp_pfp'] ?? 'uploads/profile_pictures/default.avif'; // Use default image if none exists
+
+$isTechnician = ($_SESSION["role"] !== 1);
+$isAdmin = ($userId == '999');
+
+if (isset($_GET['yearmonth'])) {
+    $_SESSION['yearmonth'] = $_GET['yearmonth'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -55,7 +62,11 @@ $userProfilePicUrl = $result->fetch_assoc()['emp_pfp'] ?? 'uploads/profile_pictu
                 </ul>
             </div>
         </div>
-        <div class="bell-btn"><i class="fa-solid fa-bell"></i></div>
+        <div class="bell-btn">
+    <a href="notifications.php">
+        <i class="fa-solid fa-bell"></i>
+    </a>
+</div>
         <div class="profile-icon">
             <img src="<?php echo htmlspecialchars($userProfilePicUrl); ?>" alt="User Profile" id="pfp"> <!-- Replace with the actual image path from the database -->
         </div>
@@ -65,6 +76,19 @@ $userProfilePicUrl = $result->fetch_assoc()['emp_pfp'] ?? 'uploads/profile_pictu
                 <input type="file" name="profilePic" id="profilePic" accept="image/*" required>
                 <button type="submit">Upload</button>
             </form>
+            <div class="user-infomation">
+                <p>Welcome, <?php echo $_SESSION["name"]?></p>
+                <p>Role : <?php echo $_SESSION["role"]?></p>
+                <p>ID : <?php echo $_SESSION["emp_id"]?></p>
+                <p>Department Code : <?php echo $_SESSION["dep_code"]?></p>
+            </div>
+
+            <!-- ปุ่ม Edit Password -->
+            <div class="edit-password-container">
+                <a href="change_password.php">
+                    <button class="edit-password-btn">Change Password</button>
+                </a>
+            </div>
         </div>
         <div class="item2"><a href="index.php?logout=1"><button class="logout-btn"><i id="logout-btn" class="fa-solid fa-right-from-bracket"></i></button></a></div>
     </div>
@@ -77,7 +101,18 @@ $userProfilePicUrl = $result->fetch_assoc()['emp_pfp'] ?? 'uploads/profile_pictu
         </div>
         <div class="content">
             <div class="content-btn-area">
+                <?php
+                if (isset($_GET['yearmonth']) && empty($_SESSION['yearmonth'])) {
+                    $head = "All-Time";
+                } else if (isset($_GET['yearmonth']) && !empty($_SESSION['yearmonth'])) {
+                    $head = $_SESSION['yearmonth'];
+                } else {
+                    $head = date('Y-m');
+                }
+                ?>
+                <span id='month'><?php echo $head;?></span>
                 <div class="space"></div>
+                <a hreh="#"><button class="date-btn" onclick="togglePopupDate()"><i class="fa-regular fa-calendar"></i></button></a>
                 <a hreh="#"><button class="search-btn" onclick="togglePopupSearch()"><i class="fa-solid fa-magnifying-glass"></i></button></a>
                 <a hreh="#"><button class="filter-btn" onclick="togglePopupSort()"><i class="fa-solid fa-filter"></i></button></a>
             </div>
@@ -87,6 +122,13 @@ $userProfilePicUrl = $result->fetch_assoc()['emp_pfp'] ?? 'uploads/profile_pictu
                 <b class="grid-item3">By</b>
                 <b class="grid-item4">Progress</b>
                 <p class="grid-item5"></p>
+            </div>
+            <div class="popup-date" id="popupDate">
+                <form method="GET" action ="">
+                    <label for="month">Select Year and Month:</label>
+                    <input type="month" id="month" name="yearmonth">
+                    <button type="submit">Submit</button>
+                </form>
             </div>
             <div class="popup-search" id="popupSearch">
                 <form method="GET" action="">
@@ -102,21 +144,32 @@ $userProfilePicUrl = $result->fetch_assoc()['emp_pfp'] ?? 'uploads/profile_pictu
                         <option value="com_time" <?php echo isset($_GET['sort']) && $_GET['sort'] == 'com_time' ? 'selected' : ''; ?>>Date</option>
                         <option value="com_name" <?php echo isset($_GET['sort']) && $_GET['sort'] == 'com_name' ? 'selected' : ''; ?>>Name</option>
                         <option value="com_status" <?php echo isset($_GET['sort']) && $_GET['sort'] == 'com_status' ? 'selected' : ''; ?>>Status</option>
+                        <option value="com_level" <?php echo isset($_GET['sort']) && $_GET['sort'] == 'com_level' ? 'selected' : ''; ?>>Severity</option>
                     </select>
                     <button type="submit">Sort</button>
                 </form>
             </div>
+
             <?php
             // Check if a sort option has been selected
             $sortColumn = isset($_GET['sort']) ? $_GET['sort'] : 'com_time'; // Default to 'com_time' if no sort selected
+
+            // สร้างเงื่อนไขการจัดเรียง
+            $orderBy = ($sortColumn === 'com_level') ? "ORDER BY FIELD(com_level, 'Emergency', 'Urgent', 'Normal')" : "ORDER BY $sortColumn";
+            $orderDESC = ($sortColumn === 'com_status') ? "DESC" : "ASC";
+
             // Chech if Search
             $search = isset($_GET['search']) && !empty($_GET['search']);
+            $date = isset($_SESSION['yearmonth']);
 
             if ($search) {
                 $s = mysqli_real_escape_string($conn, $_GET['search']);
-                $sql = "SELECT * FROM complaint WHERE com_name = '$s'";
+                $sql = "SELECT * FROM complaint WHERE com_name LIKE '%$s%'";
+            } else if ($date) {
+                $d = mysqli_real_escape_string($conn,$_SESSION['yearmonth']);
+                $sql = "SELECT * FROM complaint WHERE com_time LIKE '$d%' $orderBy $orderDESC";
             } else {
-                $sql = "SELECT * FROM complaint ORDER BY $sortColumn";
+                $sql = "SELECT * FROM complaint WHERE MONTH(com_time) = MONTH(CURRENT_DATE()) AND YEAR(com_time) = YEAR(CURRENT_DATE()) $orderBy $orderDESC";
             }
             // SQL query to select all rows from the complaint table with dynamic sorting
             $query = mysqli_query($conn, $sql);
@@ -129,19 +182,28 @@ $userProfilePicUrl = $result->fetch_assoc()['emp_pfp'] ?? 'uploads/profile_pictu
                 $index = 0;
                 // Fetch the complaint details for each row and check ownership
                 while ($result = mysqli_fetch_assoc($query)) {
+
+                    $colorMapping = [
+                        'Emergency' => 'c1',  // สีแดง
+                        'Urgent' => 'c2',     // สีเหลือง
+                        'Normal' => 'c3',     // สีเขียว
+                    ];
+                    
+                    $color = $colorMapping[$result["com_level"]] ?? 'c3';
+
+
                     $complaintId = $result["com_id"];
                     $complaintName = htmlspecialchars($result["com_name"]);
                     $complaintDetail = htmlspecialchars($result["com_detail"]);
-                    $color = htmlspecialchars($result["com_level"]);
+                    
                     $status = htmlspecialchars($result["com_status"]);
                     
                     // Check if the logged-in user is the owner of the complaint
                     $isOwner = ($result["emp_id"] == $userId);
-                    $isTechnician = ($_SESSION["role"] !== 1);
-                    $isAdmin = ($userId == '999');
                     
+                    echo '<div class="complaint">';
                     echo '<div class="complaint-grid">';
-                    echo '<div class="grid-item1 c' . $color . '">' . $complaintName . '</div>';
+                    echo '<div class="grid-item1 ' . $color . '">' . $complaintName . '</div>';
                     echo '<div class="grid-item2">' . htmlspecialchars($result["com_time"]) . '</div>';
                     echo '<div class="grid-item3">' . htmlspecialchars($result["emp_id"]) . '</div>';
                     echo '<div class="grid-item4 ' . $status . '">' . $status . '</div>';
@@ -166,14 +228,14 @@ $userProfilePicUrl = $result->fetch_assoc()['emp_pfp'] ?? 'uploads/profile_pictu
                                     \'' . htmlspecialchars($complaintName, ENT_QUOTES) . '\',
                                     \'' . htmlspecialchars($complaintDetail, ENT_QUOTES) . '\',
                                     \'' . htmlspecialchars($status, ENT_QUOTES) . '\',
-                                    \'' . htmlspecialchars($_SESSION["role"], ENT_QUOTES) . '\'
+                                    \'' . htmlspecialchars($_SESSION["role"]) . '\'
                                 ); 
                                 return false;">
                                 <i class="fa-solid fa-pen"></i> Edit
                                 </a>
                             </div>';
                     }
-                    echo '</div>';
+                    echo '</div></div>';
 
                     $index++;
                 }
@@ -264,6 +326,11 @@ $userProfilePicUrl = $result->fetch_assoc()['emp_pfp'] ?? 'uploads/profile_pictu
     const popup = document.getElementById('popupSearch');
     popup.classList.toggle('show'); // Toggle 'show' class to activate the animation
     }
+
+    function togglePopupDate() {
+    const popup = document.getElementById('popupDate');
+    popup.classList.toggle('show'); // Toggle 'show' class to activate the animation
+    }
     
     const pfp = document.getElementById("pfp");
     pfp.addEventListener("click",togglePopupPfp);
@@ -315,3 +382,7 @@ $userProfilePicUrl = $result->fetch_assoc()['emp_pfp'] ?? 'uploads/profile_pictu
     </script>   
 </body>
 </html>
+
+
+
+

@@ -26,8 +26,17 @@ if (isset($_POST['submit'])) {
     // รับข้อมูลจากฟอร์มและป้องกัน SQL Injection
     $Cname = mysqli_real_escape_string($conn, $_POST['Cname']);
     $Cdetail = mysqli_real_escape_string($conn, $_POST['Cdetail']);
+    $Ctype = mysqli_real_escape_string($conn, $_POST['priority']);
+
     $Cpriority = mysqli_real_escape_string($conn, $_POST['priority']);
-    $Ctype = mysqli_real_escape_string($conn, $_POST['type']);
+    if ($Cpriority == "Normal") {
+        $Clevel = 3;
+    } elseif ($Cpriority == "Urgent") {
+        $Clevel = 2;
+    } elseif ($Cpriority == "Emergency") {
+        $Clevel = 1;
+    } else { exit();}
+
     $Cstatus = 'Waiting';
     $emp_id = intval($_SESSION['emp_id']);
     $Ctime = date('Y-m-d H:i:s');
@@ -41,49 +50,44 @@ if (isset($_POST['submit'])) {
 
     // สร้างคำสั่ง SQL สำหรับเพิ่มข้อมูลลงในตาราง complaint
     $sql = "INSERT INTO complaint (com_name, com_detail, com_level, com_status, emp_id, dep_code, com_time, com_type)
-            VALUES ('$Cname', '$Cdetail', '$Cpriority', '$Cstatus', '$emp_id', '$dep_code', '$Ctime', '$Ctype')";
+            VALUES ('$Cname', '$Cdetail', '$Clevel', '$Cstatus', '$emp_id', '$dep_code', '$Ctime', '$Ctype')";
 
+if (mysqli_query($conn, $sql)) {
+    // เพิ่ม Complaint สำเร็จ
+    $complaintId = mysqli_insert_id($conn); // ดึง ID ของ Complaint ที่เพิ่มใหม่
     
-    // รันคำสั่ง SQL และตรวจสอบผลลัพธ์
-    if (mysqli_query($conn, $sql)) {
-        echo "Record added successfully!";
+    // เพิ่ม Notification สำหรับพนักงานในแผนก ENG
+    $notificationMessage = mysqli_real_escape_string($conn, "New complaint '$Cname' added with priority $Cpriority.");
+
+    $targetDepCode = 'ENG'; // แผนกที่ต้องการส่ง Notification
     
-        // ดึง ID ของ Complaint ที่เพิ่งเพิ่มใหม่
-        $complaintId = mysqli_insert_id($conn);
     
-        // เพิ่ม Notification สำหรับพนักงานที่มี role_id > 1
-        $notificationMessage = mysqli_real_escape_string($conn, "New complaint '$Cname' added with priority $Cpriority.");
-        $employeeQuery = "SELECT emp_id FROM employee WHERE role_id > 1"; // เปลี่ยนเป็น role_id > 1
-        $employeeResult = mysqli_query($conn, $employeeQuery);
-    
-        if ($employeeResult && mysqli_num_rows($employeeResult) > 0) {
-            while ($employee = mysqli_fetch_assoc($employeeResult)) {
-                $targetEmpId = $employee['emp_id'];
-                $notificationSQL = "INSERT INTO notifications (message, emp_id, com_id, notification_time, is_read) 
-                                    VALUES ('$notificationMessage', '$targetEmpId', '$complaintId', NOW(), 0)";
-                if (!mysqli_query($conn, $notificationSQL)) {
-                    echo "Error adding notification: " . mysqli_error($conn);
-                }
-            }
-            echo "Notifications sent to employees with role_id > 1.";
-        } else {
-            if (!$employeeResult) {
-                echo "SQL Error in employee query: " . mysqli_error($conn);
-            } else {
-                echo "No employees found with role_id > 1.";
+    // ดึงรายชื่อพนักงานในแผนกที่ต้องการ (dep_code = 'ENG')
+    $employeeQuery = "SELECT emp_id FROM employee WHERE dep_code = '$targetDepCode'";
+    $employeeResult = mysqli_query($conn, $employeeQuery);
+
+    if (mysqli_num_rows($employeeResult) > 0) {
+        while ($employee = mysqli_fetch_assoc($employeeResult)) {
+            $targetEmpId = $employee['emp_id'];
+            $notificationSQL = "INSERT INTO notifications (message, emp_id, com_id, notification_time, is_read) 
+                                VALUES ('$notificationMessage', '$targetEmpId', '$complaintId', NOW(), 0)";
+            if (!mysqli_query($conn, $notificationSQL)) {
+                echo "Error adding notification: " . mysqli_error($conn);
             }
         }
-    
-        // Redirect to index.php after 2 seconds
-        header("Refresh: 2; URL=index.php");
-        exit();
+        echo "Complaint added and notifications sent!";
     } else {
-        echo "Error: " . mysqli_error($conn);
-        exit();
+        echo "No employees found in department '$targetDepCode'.";
     }
-    
-    
+    header("Location: index.php");
+    exit();
+} else {
+    echo "Error adding complaint: " . mysqli_error($conn);
 }
+
+    }
+
+
 // Assuming user session contains their ID
 $userId = $_SESSION['emp_id'];
 $result = $conn->query("SELECT emp_pfp FROM employee WHERE emp_id = $userId");
@@ -101,6 +105,7 @@ if ($result->num_rows > 0) {
 $conn->close();
 
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -125,11 +130,7 @@ $conn->close();
             <span style="color: #c453d1;">G</span>
         </h3>
         <div class="info-btn">i</div>
-        <div class="bell-btn">
-    <a href="notifications.php">
-        <i class="fa-solid fa-bell"></i>
-    </a>
-</div>
+        <div class="bell-btn"><i class="fa-solid fa-bell"></i></div>
         <div class="profile-icon">
             <img src="<?php echo htmlspecialchars($userProfilePicUrl); ?>" alt="User Profile" id="pfp"> <!-- Replace with the actual image path from the database -->
         </div>
@@ -203,4 +204,3 @@ $conn->close();
     </script>
 </body>
 </html>
-

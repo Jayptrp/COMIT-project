@@ -62,9 +62,9 @@ if (isset($_POST['update'])) {
         <ul>
           
           <li><a href="add_user.php">ADD USERS</a></li>
+          <li><a href="add_category.php">ADD CATEGORIES</a></li>
           <li><a href="report.php">REPORTS</a></li>
           <li><a href="index.php">INDEX</a></li>
-          <li><a href="add_category.php">ADD CATEGORIES</a></li>
           <li><a href="add.php">ADD COMPLAINTS</a></li>
           <li><a href="login.php">LOGOUT</a></li>
         </ul>

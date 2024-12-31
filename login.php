@@ -66,7 +66,6 @@ if (isset($_POST["username"]) && isset($_POST["password"])) {
             <input name="password" type="password" placeholder="Password" required>
             <button type="submit">Enter</button>
         </form>
-        <a href="#">Contact admin</a>
     </div>
 </body>
 </html>

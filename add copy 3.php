@@ -43,46 +43,15 @@ if (isset($_POST['submit'])) {
     $sql = "INSERT INTO complaint (com_name, com_detail, com_level, com_status, emp_id, dep_code, com_time, com_type)
             VALUES ('$Cname', '$Cdetail', '$Cpriority', '$Cstatus', '$emp_id', '$dep_code', '$Ctime', '$Ctype')";
 
-    
     // รันคำสั่ง SQL และตรวจสอบผลลัพธ์
     if (mysqli_query($conn, $sql)) {
         echo "Record added successfully!";
-    
-        // ดึง ID ของ Complaint ที่เพิ่งเพิ่มใหม่
-        $complaintId = mysqli_insert_id($conn);
-    
-        // เพิ่ม Notification สำหรับพนักงานที่มี role_id > 1
-        $notificationMessage = mysqli_real_escape_string($conn, "New complaint '$Cname' added with priority $Cpriority.");
-        $employeeQuery = "SELECT emp_id FROM employee WHERE role_id > 1"; // เปลี่ยนเป็น role_id > 1
-        $employeeResult = mysqli_query($conn, $employeeQuery);
-    
-        if ($employeeResult && mysqli_num_rows($employeeResult) > 0) {
-            while ($employee = mysqli_fetch_assoc($employeeResult)) {
-                $targetEmpId = $employee['emp_id'];
-                $notificationSQL = "INSERT INTO notifications (message, emp_id, com_id, notification_time, is_read) 
-                                    VALUES ('$notificationMessage', '$targetEmpId', '$complaintId', NOW(), 0)";
-                if (!mysqli_query($conn, $notificationSQL)) {
-                    echo "Error adding notification: " . mysqli_error($conn);
-                }
-            }
-            echo "Notifications sent to employees with role_id > 1.";
-        } else {
-            if (!$employeeResult) {
-                echo "SQL Error in employee query: " . mysqli_error($conn);
-            } else {
-                echo "No employees found with role_id > 1.";
-            }
-        }
-    
-        // Redirect to index.php after 2 seconds
         header("Refresh: 2; URL=index.php");
         exit();
     } else {
         echo "Error: " . mysqli_error($conn);
         exit();
     }
-    
-    
 }
 // Assuming user session contains their ID
 $userId = $_SESSION['emp_id'];
@@ -125,11 +94,7 @@ $conn->close();
             <span style="color: #c453d1;">G</span>
         </h3>
         <div class="info-btn">i</div>
-        <div class="bell-btn">
-    <a href="notifications.php">
-        <i class="fa-solid fa-bell"></i>
-    </a>
-</div>
+        <div class="bell-btn"><i class="fa-solid fa-bell"></i></div>
         <div class="profile-icon">
             <img src="<?php echo htmlspecialchars($userProfilePicUrl); ?>" alt="User Profile" id="pfp"> <!-- Replace with the actual image path from the database -->
         </div>
