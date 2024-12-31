@@ -2,9 +2,10 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$conn = mysqli_connect("localhost", "root", "", "d67g7");
+// Update connection settings to match docker-compose configuration
+$conn = mysqli_connect("db", "root", "rootpassword", "mysql-db");
 
-// ตรวจสอบการเชื่อมต่อฐานข้อมูล
+// Check database connection
 if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }

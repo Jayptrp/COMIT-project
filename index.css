@@ -134,7 +134,7 @@
         top: 10vh;
         right: 1rem;
         width: 17rem;
-        height: 8rem;
+        height: 19rem;
         background-color: #ffffff;
         border-radius: 1rem;
         padding: 1rem;
@@ -145,6 +145,31 @@
             input { margin: 1rem 0;}
             button { color: white; background-color: rgb(0, 178, 0); border: 0; border-radius: 1rem; padding: 0.2rem 0.4rem;}
             button:hover { opacity: 70%;}
+        }
+        .user-infomation {
+            padding: 1rem;
+            background-color: pink;
+            border-radius: 0.5rem;
+        }
+
+            /* ปุ่ม Edit Password */
+        .edit-password-container {
+            margin-top: 0.5rem;
+            text-align: center; /* จัดปุ่มให้อยู่ตรงกลาง */
+        }
+
+        .edit-password-btn {
+            color: rgb(7, 7, 7);
+            background-color: rgba(201, 208, 200, 0.805); /* สีแดง */
+            border: 0;
+            border-radius: 1rem;
+            padding: 0.4rem 1rem;
+            font-size: 0.6rem;
+            cursor: pointer;
+        }
+
+        .edit-password-btn:hover {
+            opacity: 0.8; /* เอฟเฟกต์ hover */
         }
     }
     .profile-popup.show {
@@ -252,12 +277,33 @@
             opacity: 1; /* Fade in */
             scale: 1;
         }
+        .popup-date {
+            position: absolute;
+            top: 24%;
+            right: 52rem;
+            background-color: #FFAFE0;
+            padding: 1rem;
+            border-radius: 2rem;
+            opacity: 0; /* Initial state hidden */
+            scale: 0.3;
+            transition: opacity 0.4s ease, transform 0.4s ease, scale 0.4s ease; /* Transition properties */
+            display: block; /* Ensure the element occupies space */
+        }
+        .popup-date.show {
+            opacity: 1; /* Fade in */
+            scale: 1;
+        }
 
         .content-btn-area {
             display: grid;
-            grid-template-columns: auto 5% 5%;
+            grid-template-columns: 30% auto 5% 5% 5%;
             padding: 0rem 0rem 1rem 0rem;
 
+            #month {
+                font-size: 2.5rem;
+                color: #3c3c3c;
+                transform: translateY(10px);
+            }
             button {
                 background: transparent;
                 border: 1px solid grey;
@@ -289,6 +335,7 @@
                 padding: 1rem;
             }
         }
+        .complaint:hover { background: rgb(225, 225, 225);}
         .complaint-grid {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr 0.3fr;
@@ -323,6 +370,7 @@
                 transform: rotateZ(0deg); /* Initial rotation */
             }
         }
+        .complaint-grid:hover { background: rgb(225, 225, 225);}
         .complaint-box {
             display: none;
             transition: all 2s;
@@ -449,3 +497,5 @@
         font-size: 1.2rem;
     }
 }
+
+
